@@ -1,60 +1,69 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
-function App() {
+const MyReactTaskList = () => {
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem('tasks');
+    if (storedTasks) {
+      setTasks(JSON.parse(storedTasks));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  const addTask = (newTask) => {
+    const task = { description: newTask, completed: false };
+    setTasks([...tasks, task]);
+  };
+
+  const toggleTaskStatus = (index) => {
+    const updatedTasks = [...tasks];
+    updatedTasks[index].completed = !updatedTasks[index].completed;
+    setTasks(updatedTasks);
+  };
+
+  const deleteTask = (index) => {
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
+  };
+
   return (
-    <div className="todoapp stack-large">
-      <Header/>
-      <Task tipo="checkbox"/>
-      <TaskList name="Trapear"/>
-      <Task tipo="checkbox"/>
-      <TaskList name="Comer"/>
-      <Task tipo="checkbox"/>
-      <TaskList name="Amar al gato"/>
+    <div>
+      <h1>Task List</h1>
+      <ul>
+        {tasks.map((task, index) => (
+          <li key={index}>
+            <span
+              style={{
+                textDecoration: task.completed ? 'line-through' : 'none',
+              }}
+            >
+              {task.description}
+            </span>
+            <button onClick={() => toggleTaskStatus(index)}>
+              {task.completed ? 'Pendiente' : 'Completa'}
+            </button>
+            <button onClick={() => deleteTask(index)}>Borrar</button>
+          </li>
+        ))}
+      </ul>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const newTask = e.target.task.value;
+          addTask(newTask);
+          e.target.task.value = '';
+        }}
+      >
+        <input type="text" name="task" placeholder="Nueva tarea" />
+        <button type="submit">Añadir</button>
+      </form>
     </div>
   );
-}
+};
 
-
-function Header(props){
-  return (<div>
-    <h1>Todo App</h1>
-    <form>
-    <input type="text" value="Buscar tarea"/>
-    
-    <button type="submit" className="btn btn__primary btn__lg">
-      +
-    </button>
-  </form>
-  </div>
-    );
-  }
-
-
-function Task(props) {
-  return (<div>
-    <input type={props.tipo}/>
-  </div>
-  ); 
-}
-
-  
-  function TaskList(props){
-    return ( <div>
-  <ul>
-    <div>
-      <label className="todo-label" htmlFor="todo-0">
-        {props.name}
-      </label>
-      <button type="button" className="btn">
-        Editar
-      </button>
-      <button type="button" className="btn btn__danger">
-        Borrar
-      </button>
-    </div>  
-   </ul>
-  </div>
-    );
-  } 
-export default App
+export default MyReactTaskList;
